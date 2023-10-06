@@ -58,7 +58,7 @@ export class AppComponent {
     this.listToUser()
     // this.getData();
     // this.listenToContent();
-    // this.subscribeToChannel();
+    this.subscribeToChannel();
   }
 
   async listToUser(){
@@ -128,21 +128,17 @@ export class AppComponent {
       })
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          channel.send({
-            type: 'broadcast',
-            event: 'cursor-pos',
-            payload: { x: Math.random(), y: Math.random() },
-          });
+          document.onmousemove = (event) => {
+            channel.send({
+              type: 'broadcast',
+              event: 'cursor-pos',
+              payload: { x: event.clientX, y: event.clientY },
+            });
+          };
         }
       });
 
-    document.onmousemove = (event) => {
-      channel.send({
-        type: 'broadcast',
-        event: 'cursor-pos',
-        payload: { x: event.clientX, y: event.clientY },
-      });
-    };
+    
   }
 
   trackFn = (idx: number, item: any) => {
