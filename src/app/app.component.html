@@ -1,0 +1,28 @@
+<!-- 
+<div *ngFor="let content of contents;trackBy: trackFn">
+
+  
+
+    
+    <label for="slug">Slug</label>
+    <input id="slug" type="text" [ngModel]="content.slug" (ngModelChange)="udpate(content.id, 'slug', $event )" >
+
+    <label for="slug">Name</label>
+    <input id="slug" type="text" [ngModel]="content.name" (ngModelChange)="udpate(content.id, 'name', $event )" >
+    
+    <label for="typeSpecific">typeSpecific</label>
+    <textarea id="typeSpecific" [ngModel]="content.typeSpecific" (ngModelChange)="udpate(content.id, 'typeSpecific', $event )"></textarea>
+
+</div> -->
+
+
+<div style="width:10px;height: 10px;background:red; position: fixed;transition: all 100ms; border-radius: 10px; box-shadow: 0px 0xp 4px rgba(0,0,0,0.1);" [style.left.px]="userLeft" [style.top.px]="userTop"></div>
+
+<ng-container *ngIf="!user">
+  <app-sign-up class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></app-sign-up>
+</ng-container>
+
+<div class="fixed top-4 right-4" *ngIf="user" >
+  <button type="button" (click)="logout()" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Logout</button>
+
+</div>
