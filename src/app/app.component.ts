@@ -77,7 +77,7 @@ export class AppComponent {
       }
     }
     else{
-
+      if(!this.chatOpen) this.chatOpen = true;
       this.messages = [...this.messages, payload.new];
     };
   }
