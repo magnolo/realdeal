@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { createClient } from '@supabase/supabase-js';
+import { RealtimeChannel, createClient } from '@supabase/supabase-js';
 
 import { createStore } from '@ngneat/elf';
 import {
@@ -56,10 +56,13 @@ export class AppComponent {
   userTop = 0;
   user?: any;
   remoteUser: any[] = [];
+  clicks: any[] = [];
 
   messages: any[] = [];
 
   chatOpen = false;
+
+  mainChannel?: RealtimeChannel;
 
   messagesForm = new FormGroup({
     text: new FormControl('', [Validators.required, Validators.minLength(4)]),
@@ -69,18 +72,17 @@ export class AppComponent {
 
   handleInserts = (payload: any) => {
     // console.log(payload);
-    if(payload.eventType === 'DELETE'){
+    if (payload.eventType === 'DELETE') {
       const id = payload.old.id;
       const idx = this.messages.findIndex((msg) => msg.id === id);
-      if(idx > -1 ){
-        this.messages.splice(idx, 1)
+      if (idx > -1) {
+        this.messages.splice(idx, 1);
       }
-    }
-    else{
-      if(!this.chatOpen) this.chatOpen = true;
+    } else {
+      if (!this.chatOpen) this.chatOpen = true;
       this.messages = [...this.messages, payload.new];
-    };
-  }
+    }
+  };
 
   ngOnInit(): void {
     // contentStore.pipe(selectAllEntities()).subscribe((contents) => {
@@ -103,7 +105,15 @@ export class AppComponent {
     this.sb.client.auth.onAuthStateChange((event, session) => {
       this.user = session?.user;
       if (this.user) {
+        console.log('SUB')
         this.subscribeToChannel();
+      }
+      else{
+        if( this.mainChannel){
+          console.log('UNSUB')
+          this.mainChannel.unsubscribe();
+
+        } 
       }
     });
   }
@@ -152,7 +162,7 @@ export class AppComponent {
   }
 
   subscribeToChannel() {
-    const channel = this.sb.client.channel('23channel', {
+    this.mainChannel = this.sb.client.channel('23channel', {
       config: {
         presence: {
           key: this.user.id,
@@ -160,9 +170,10 @@ export class AppComponent {
       },
     });
 
-    channel
+    this.mainChannel
       .on('presence', { event: 'sync' }, () => {
-        const newState = channel.presenceState();
+        if (!this.mainChannel) return;
+        const newState = this.mainChannel.presenceState();
 
         const users = Object.keys(newState)
           .map((key, idx) => {
@@ -172,11 +183,12 @@ export class AppComponent {
 
           .filter((item: any, idx) => item['user_id'] !== this.user.id);
 
-        this.remoteUser = users.map((user) => ({
+        this.remoteUser = users.map((user: any) => ({
           ...user,
           x: 0,
           y: 0,
           visible: false,
+          color: this.stringToColor(user['user_email'])
         }));
       })
       // .on('presence', { event: 'join' }, ({ key, newPresences }) => {
@@ -205,24 +217,59 @@ export class AppComponent {
         // this.userLeft = payload['payload'].x;
         // this.userTop = payload['payload'].y;
       })
-      .subscribe(async (status) => {
-        if (status === 'SUBSCRIBED') {
-          document.onmousemove = (event) => {
-            channel.send({
-              type: 'broadcast',
-              event: 'cursor-pos',
-              payload: {
-                x: event.clientX,
-                y: event.clientY,
-                user_email: this.user.email,
-              },
-            });
-          };
+      .on('broadcast', { event: 'click-pos' }, (payload) => {
+        const p = payload['payload'];
 
-          await channel.track({
+        const d = new Date();
+        this.clicks.push({x: p.x, y: p.y, date:d})
+        
+
+        setTimeout(() => {
+          const idx = this.clicks.findIndex((click) => click.date === d);
+          if(idx > -1){
+            this.clicks.splice(idx, 1)
+          }
+        }, 1000)
+        // this.userLeft = payload['payload'].x;
+        // this.userTop = payload['payload'].y;
+      })
+
+      
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED' && this.mainChannel && this.user) {
+
+          await this.mainChannel.track({
             user_id: this.user.id,
             user_email: this.user.email,
           });
+
+          document.onmousemove = (event) => {
+            if (this.mainChannel && this.user)
+              this.mainChannel.send({
+                type: 'broadcast',
+                event: 'cursor-pos',
+                payload: {
+                  x: event.clientX,
+                  y: event.clientY,
+                  user_email: this.user.email,
+                },
+              });
+          };
+
+          document.onclick = (event) => {
+            if (this.mainChannel && this.user)
+              this.mainChannel.send({
+                type: 'broadcast',
+                event: 'click-pos',
+                payload: {
+                  x: event.clientX,
+                  y: event.clientY,
+                  user_email: this.user.email,
+                },
+              });
+          };
+
+        
           this.getData();
           this.listenToContent();
           // console.log(presenceTrackStatus);
@@ -241,12 +288,10 @@ export class AppComponent {
   async sendMessage() {
     if (this.messagesForm.value['text']) {
       this.messagesForm.disable();
-      const { error } = await this.sb.client
-        .from('messages')
-        .insert({
-          user: this.user.email,
-          text: this.messagesForm.value['text'],
-        });
+      const { error } = await this.sb.client.from('messages').insert({
+        user: this.user.email,
+        text: this.messagesForm.value['text'],
+      });
 
       this.messagesForm.reset();
       this.messagesForm.enable();
@@ -259,4 +304,16 @@ export class AppComponent {
       .delete()
       .eq('id', id);
   }
+
+  stringToColor = (string: string, saturation = 100, lightness = 75) => {
+    let hash = 0;
+    for (let i = 0; i < string.length; i++) {
+  hash = string.charCodeAt(i) + ((hash << 5) - hash);
+  hash = hash & hash;
+    }
+    return `hsl(${(hash % 360)}, ${saturation}%, ${lightness}%)`;
+  }
+  
+  
+  
 }

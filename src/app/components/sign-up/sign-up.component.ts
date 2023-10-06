@@ -28,31 +28,54 @@ export class SignUpComponent {
     password: new FormControl(''),
   });
 
+  signUpError?: string;
+  loginInError?: string;
+
   constructor(private sb: SupabaseService) {}
 
   async signup(event: any, form: any) {
-    console.log(event, form);
-
     const credentials = this.signupForm.value;
     if (credentials.email && credentials.password) {
-      const { data, error } = await this.sb.client.auth.signUp({
-        email: credentials.email,
-        password: credentials.password,
-      });
-      console.log(data);
+      this.signupForm.disable();
+      try {
+        const { data, error } = await this.sb.client.auth.signUp({
+          email: credentials.email,
+          password: credentials.password,
+        });
+
+        if (error) {
+          this.signUpError = error.message;
+        } else {
+          this.signUpError = undefined;
+        }
+      } catch (e) {
+        console.log({ e });
+      }
+      this.signupForm.enable();
     }
   }
 
   async logMeIn(event: any, form: any) {
     const credentials = this.loginForm.value;
-    console.log(event, form, credentials);
 
     if (credentials.email && credentials.password) {
-      const auth = await this.sb.client.auth.signInWithPassword({
-        email: credentials.email,
-        password: credentials.password,
-      });
-      console.log(auth);
+      this.loginForm.disable();
+
+      try {
+        const { data, error } = await this.sb.client.auth.signInWithPassword({
+          email: credentials.email,
+          password: credentials.password,
+        });
+        if (error) {
+          this.loginInError = error.message;
+  
+        } else {
+          this.loginInError = undefined;
+        }
+      } catch (e) {
+        console.log({ e });
+      }
+      this.loginForm.enable();
     }
   }
 }

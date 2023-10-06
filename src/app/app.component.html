@@ -15,7 +15,7 @@
 
 </div> -->
 
-<div class="opacity-10 max-w-full fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 "><svg width="780" height="720" viewBox="0 0 78 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+<div class="opacity-10 max-w-screen-lg fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full mx-auto"><svg class="max-w-full" width="780" height="720" viewBox="0 0 78 72" fill="none" xmlns="http://www.w3.org/2000/svg">
   <mask id="mask0_2_100" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="0" width="78" height="72">
   <path fill-rule="evenodd" clip-rule="evenodd" d="M0.563842 71.9896V0.68342H77.5504V71.9896H0.563842Z" fill="#ccc"/>
   </mask>
@@ -30,20 +30,20 @@
   </g>
   </svg></div>
 
-<div #chat class=" fixed bottom-16 right-4 bg-slate-900 rounded max-w-xs w-full overflow-hidden max-h-[800px] overflow-y-auto" @slideInBottom *ngIf="chatOpen && user">
+<div #chat class=" fixed bottom-16 right-4 bg-slate-900 rounded max-w-xs w-full overflow-hidden max-h-[800px] overflow-y-auto flex flex-col gap-2 py-2" @slideInBottom *ngIf="chatOpen && user">
 
 
 
-
-  <div class="text-white bg-slate-900 p-2 mx-2 relative hover:cursor-not-allowed" (click)="deleteMessage(message.id)" *ngFor="let message of messages" @slideInBottom>
+ 
+  <div class="text-white bg-slate-900 p-2 mx-2 relative hover:cursor-not-allowed rounded flex flex-col w-fit" [ngClass]="{'bg-blue-800': message.user !== user.email, 'bg-green-800 self-end':  message.user === user.email}"  (click)="deleteMessage(message.id)" *ngFor="let message of messages" @slideInBottom>
     <div class="text-[10px] opacity-50 font-light">{{ message.user }}</div>
     <!-- <div class="text-[10px] opacity-25">{{ message.created_at | date }}</div> -->
     <div class="text-sm">{{ message.text }}</div>
 
   </div>
   <form [formGroup]="messagesForm" (ngSubmit)="sendMessage()"  class="stick bottom-0">
-    <div class="flex justify-center items-center  p-1 border-t border-opacity-20 border-white">
-      <input required minlength="3" formControlName="text" type="text" class="text-white flex flex-1 text-xs bg-transparent p-2 rounded mr-2" placeholder="Come on text me..." >
+    <div class="flex justify-center items-center  p-1  border-opacity-20 border-white">
+      <input required minlength="2" formControlName="text" type="text" class="focus-visible:outline-none focus-visible:ring-1 text-white flex flex-1 text-xs bg-transparent p-2 rounded mr-2 focus:" placeholder="Come on text me..." >
       <button [disabled]="messagesForm.invalid"  type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded text-sm px-2 py-1  dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Send</button>
     </div>
   </form>
@@ -53,9 +53,9 @@
   23°
 </div>
 
-<ng-container *ngFor="let user of remoteUser">
-<div [ngClass]="{'opacity-0': !user.visible, 'opacity-100': user.visible}" class="fixed transition-all duration-75 shadow"  [style.left.px]="user.x" [style.top.px]="user.y">
-  <div class="-rotate-90 text-red-500">
+<ng-container *ngFor="let remoteUser of remoteUser">
+<div [ngClass]="{'opacity-0': !remoteUser.visible, 'opacity-100': remoteUser.visible}" class="fixed transition-all duration-75 shadow"  [style.left.px]="remoteUser.x + 3" [style.top.px]="remoteUser.y + 3">
+  <div class="-rotate-90 text-red-500" [style.color]="remoteUser.color">
   <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="#000000" version="1.1" id="Capa_1" width="20px" height="20px" viewBox="0 0 266.495 266.494" xml:space="preserve">
     <g>
       <g>
@@ -64,14 +64,20 @@
     </g>
     </svg>
   </div>
-  <div class="absolute top-full left-full bg-red-500 text-sm p-1 leading-tight rounded">{{user.user_email }}</div>
+  <div class="absolute top-full left-full bg-red-500 text-xs p-1 px-2 leading-tight rounded" [style.backgroundColor]="remoteUser.color">{{remoteUser.user_email }}</div>
 </div>
 </ng-container>
 <ng-container *ngIf="!user">
-  <app-sign-up class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></app-sign-up>
+  <app-sign-up class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-screen-sm"></app-sign-up>
 </ng-container>
 
 <div class="fixed top-4 right-4" *ngIf="user" >
   <button type="button" (click)="logout()" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Logout</button>
 
 </div>
+
+
+<ng-container *ngIf="user">
+  
+  <div  class="w-1 h-1 rounded-[600px] fixed top-20 left-20 pulse"  [style.left.px]="click.x" [style.top.px]="click.y" *ngFor="let click of clicks"></div>
+</ng-container>
