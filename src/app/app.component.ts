@@ -28,17 +28,17 @@ const contentStore = createStore({ name: 'content' }, withEntities<Content>());
   animations: [
     trigger('slideInBottom', [
       transition(':enter', [
-        style({ transform: 'translateX(100%)', height: 0, overflow: 'hidden' }),
+        style({ transform: 'translateX(000%)', height: 0, overflow: 'hidden' }),
         animate(
           '250ms ease-out',
           style({ transform: 'translateX(0)', height: '*' })
         ),
       ]),
       transition(':leave', [
-        style({ transform: 'translateX(100%)', height: '*' }),
+        style({ transform: 'translateX(000%)', height: '*', overflow: 'hidden' }),
         animate(
           '250ms ease-out',
-          style({ transform: 'translateX(100%)', height: 0 })
+          style({ transform: 'translateX(000%)', height: 0 })
         ),
       ]),
     ]),
@@ -125,7 +125,7 @@ export class AppComponent {
   }
 
   async getData() {
-    let { data, error } = await this.sb.client.from('messages').select('*');
+    let { data, error } = await this.sb.client.from('messages').select('*').order('created_at', { ascending: true });
     // console.log(data);
     this.messages = data || [];
 

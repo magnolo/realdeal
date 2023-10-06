@@ -103,18 +103,19 @@
   *ngIf="chatOpen && user"
 >
   <div
-    class="text-white p-2 mx-2 relative hover:cursor-not-allowed rounded flex flex-col w-fit"
+    class="text-white p-2 mx-2 relative  rounded flex flex-col w-fit group"
     [ngClass]="{
       'bg-blue-800': message.user !== user.email,
       'bg-green-800 self-end': message.user === user.email
     }"
-    (click)="deleteMessage(message.id)"
+  
     *ngFor="let message of messages"
     @slideInBottom
   >
     <div class="text-[10px] opacity-50 font-light">{{ message.user }}</div>
     <!-- <div class="text-[10px] opacity-25">{{ message.created_at | date }}</div> -->
     <div class="text-sm">{{ message.text }}</div>
+    <div  (click)="deleteMessage(message.id)"  class="hover:cursor-not-allowed group-hover:flex hidden absolute -right-2 -top-2 rounded-full leading-none w-4 h-4 text-red-100 bg-red-800  justify-center items-center text-sm ">x</div>
   </div>
   <form
     [formGroup]="messagesForm"
