@@ -119,7 +119,11 @@ export class AppComponent {
   }
 
   subscribeToChannel() {
-    const channel = this.sb.client.channel('any');
+    const channel = this.sb.client.channel('23channel');
+
+    channel.on('presence', {event: 'join'}, ({ key, newPresences }) => {
+      console.log('join', key, newPresences)
+    })
 
     channel
       .on('broadcast', { event: 'cursor-pos' }, (payload) => {
