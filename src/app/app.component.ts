@@ -117,6 +117,7 @@ export class AppComponent {
         this.subscribeToChannel();
       } else {
         if (this.mainChannel) {
+
           this.mainChannel.unsubscribe();
         }
       }
