@@ -15,6 +15,8 @@
 
 </div> -->
 
+
+
 <div class="opacity-10 max-w-screen-lg fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full mx-auto"><svg class="max-w-full" width="780" height="720" viewBox="0 0 78 72" fill="none" xmlns="http://www.w3.org/2000/svg">
   <mask id="mask0_2_100" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="0" width="78" height="72">
   <path fill-rule="evenodd" clip-rule="evenodd" d="M0.563842 71.9896V0.68342H77.5504V71.9896H0.563842Z" fill="#ccc"/>
@@ -35,7 +37,7 @@
 
 
  
-  <div class="text-white bg-slate-900 p-2 mx-2 relative hover:cursor-not-allowed rounded flex flex-col w-fit" [ngClass]="{'bg-blue-800': message.user !== user.email, 'bg-green-800 self-end':  message.user === user.email}"  (click)="deleteMessage(message.id)" *ngFor="let message of messages" @slideInBottom>
+  <div class="text-white  p-2 mx-2 relative hover:cursor-not-allowed rounded flex flex-col w-fit" [ngClass]="{'bg-blue-800': message.user !== user.email, 'bg-green-800 self-end':  message.user === user.email}"  (click)="deleteMessage(message.id)" *ngFor="let message of messages" @slideInBottom>
     <div class="text-[10px] opacity-50 font-light">{{ message.user }}</div>
     <!-- <div class="text-[10px] opacity-25">{{ message.created_at | date }}</div> -->
     <div class="text-sm">{{ message.text }}</div>

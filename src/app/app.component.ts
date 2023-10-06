@@ -64,6 +64,8 @@ export class AppComponent {
 
   mainChannel?: RealtimeChannel;
 
+  content = '';
+
   messagesForm = new FormGroup({
     text: new FormControl('', [Validators.required, Validators.minLength(4)]),
   });
@@ -82,6 +84,13 @@ export class AppComponent {
       if (!this.chatOpen) this.chatOpen = true;
       this.messages = [...this.messages, payload.new];
     }
+  };
+
+  handleContent = (payload: any) => {
+    // console.log(payload);
+
+    if (!this.chatOpen) this.chatOpen = true;
+    this.content = payload.new.content;
   };
 
   ngOnInit(): void {
@@ -105,15 +114,11 @@ export class AppComponent {
     this.sb.client.auth.onAuthStateChange((event, session) => {
       this.user = session?.user;
       if (this.user) {
-        console.log('SUB')
         this.subscribeToChannel();
-      }
-      else{
-        if( this.mainChannel){
-          console.log('UNSUB')
+      } else {
+        if (this.mainChannel) {
           this.mainChannel.unsubscribe();
-
-        } 
+        }
       }
     });
   }
@@ -122,11 +127,29 @@ export class AppComponent {
     let { data, error } = await this.sb.client.from('messages').select('*');
     // console.log(data);
     this.messages = data || [];
+
+    // this.getContent();
+  }
+
+  async getContent() {
+    let { data, error } = await this.sb.client.from('content').select('*');
+    console.log(data);
+    this.content = data && data[0] ? data[0].content : '';
   }
 
   async listenToContent() {
     // Listen to inserts
     const channel = this.sb.client.channel('table-db-changes');
+
+    // channel.on(
+    //   'postgres_changes',
+    //   {
+    //     event: '*',
+    //     schema: 'public',
+    //     table: 'content',
+    //   },
+    //   this.handleContent
+    // )
 
     channel
       .on(
@@ -153,12 +176,15 @@ export class AppComponent {
       .select();
   }
 
-  async udpate(id: number, key: string, value: any) {
+  async udpateContent(value: any) {
+    console.log({ value });
     const { data, error } = await this.sb.client
-      .from('Content')
-      .update({ [key]: value })
-      .eq('id', id)
+      .from('content')
+      .update({ content: value })
+      .eq('id', 1)
       .select();
+
+    console.log(data);
   }
 
   subscribeToChannel() {
@@ -188,7 +214,7 @@ export class AppComponent {
           x: 0,
           y: 0,
           visible: false,
-          color: this.stringToColor(user['user_email'])
+          color: this.stringToColor(user['user_email']),
         }));
       })
       // .on('presence', { event: 'join' }, ({ key, newPresences }) => {
@@ -221,23 +247,20 @@ export class AppComponent {
         const p = payload['payload'];
 
         const d = new Date();
-        this.clicks.push({x: p.x, y: p.y, date:d})
-        
+        this.clicks.push({ x: p.x, y: p.y, date: d });
 
         setTimeout(() => {
           const idx = this.clicks.findIndex((click) => click.date === d);
-          if(idx > -1){
-            this.clicks.splice(idx, 1)
+          if (idx > -1) {
+            this.clicks.splice(idx, 1);
           }
-        }, 1000)
+        }, 1000);
         // this.userLeft = payload['payload'].x;
         // this.userTop = payload['payload'].y;
       })
 
-      
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED' && this.mainChannel && this.user) {
-
           await this.mainChannel.track({
             user_id: this.user.id,
             user_email: this.user.email,
@@ -269,7 +292,6 @@ export class AppComponent {
               });
           };
 
-        
           this.getData();
           this.listenToContent();
           // console.log(presenceTrackStatus);
@@ -308,12 +330,9 @@ export class AppComponent {
   stringToColor = (string: string, saturation = 100, lightness = 75) => {
     let hash = 0;
     for (let i = 0; i < string.length; i++) {
-  hash = string.charCodeAt(i) + ((hash << 5) - hash);
-  hash = hash & hash;
+      hash = string.charCodeAt(i) + ((hash << 5) - hash);
+      hash = hash & hash;
     }
-    return `hsl(${(hash % 360)}, ${saturation}%, ${lightness}%)`;
-  }
-  
-  
-  
+    return `hsl(${hash % 360}, ${saturation}%, ${lightness}%)`;
+  };
 }
