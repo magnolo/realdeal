@@ -15,9 +15,43 @@
 
 </div> -->
 
+<div #chat class=" fixed bottom-16 right-4 bg-slate-900 rounded max-w-xs w-full overflow-hidden max-h-[800px] overflow-y-auto" @slideInBottom *ngIf="chatOpen && user">
 
-<div style="width:10px;height: 10px;background:red; position: fixed;transition: all 100ms; border-radius: 10px; box-shadow: 0px 0xp 4px rgba(0,0,0,0.1);" [style.left.px]="userLeft" [style.top.px]="userTop"></div>
 
+
+
+  <div class="text-white bg-slate-900 p-2 mx-2 relative hover:cursor-not-allowed" (click)="deleteMessage(message.id)" *ngFor="let message of messages" @slideInBottom>
+    <div class="text-[10px] opacity-50 font-light">{{ message.user }}</div>
+    <!-- <div class="text-[10px] opacity-25">{{ message.created_at | date }}</div> -->
+    <div class="text-sm">{{ message.text }}</div>
+
+  </div>
+  <form [formGroup]="messagesForm" (ngSubmit)="sendMessage()"  class="stick bottom-0">
+    <div class="flex justify-center items-center  p-1 border-t border-opacity-20 border-white">
+      <input required minlength="3" formControlName="text" type="text" class="text-white flex flex-1 text-xs bg-transparent p-2 rounded mr-2" placeholder="Come on text me..." >
+      <button [disabled]="messagesForm.invalid"  type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded text-sm px-2 py-1  dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Send</button>
+    </div>
+  </form>
+</div>
+
+<div *ngIf="user" (click)="chatOpen = !chatOpen;" class="cursor-pointer fixed bottom-2 right-2 w-12 h-12 hover:bg-blue-900 bg-blue-600 text-blue-50 flex items-center justify-center rounded-full ">
+  23°
+</div>
+
+<ng-container *ngFor="let user of remoteUser">
+<div [ngClass]="{'opacity-0': !user.visible, 'opacity-100': user.visible}" class="fixed transition-all duration-75 shadow"  [style.left.px]="user.x" [style.top.px]="user.y">
+  <div class="-rotate-90 text-red-500">
+  <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="#000000" version="1.1" id="Capa_1" width="20px" height="20px" viewBox="0 0 266.495 266.494" xml:space="preserve">
+    <g>
+      <g>
+        <path style="fill: currentColor" d="M150.036,266.494c-0.264,0-0.517-0.006-0.792-0.018c-6.102-0.337-11.332-4.474-13.046-10.347l-26.067-89.027  l-95.203-18.867c-6.014-1.194-10.614-6.059-11.476-12.123c-0.858-6.062,2.201-12.016,7.65-14.832L242.143,1.617    C247.5-1.175,254.057-0.29,258.518,3.8c4.474,4.101,5.885,10.55,3.562,16.146l-98.743,237.655    C161.097,263.018,155.836,266.494,150.036,266.494z"/>
+      </g>
+    </g>
+    </svg>
+  </div>
+  <div class="absolute top-full left-full bg-red-500 text-sm p-1 leading-tight rounded">{{user.user_email }}</div>
+</div>
+</ng-container>
 <ng-container *ngIf="!user">
   <app-sign-up class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></app-sign-up>
 </ng-container>
